@@ -55,7 +55,9 @@ done | tee feeds.jsonl
 
 ```bash
 cpwd_admin start -name CPFEEDMAN -path /home/admin/cpfeedman -command "/home/admin/cpfeedman /home/admin/.envrc" -slp_timeout 1 -retry_limit u 
+
 watch -d 'cpwd_admin list | grep CPFEEDMAN'
+
 cpwd_admin list | grep CPFEEDMAN
 
 cpwd_admin stop -name CPFEEDMAN -path /home/admin/cpfeedman -command "/home/admin/cpfeedman /home/admin/.envrc"
@@ -63,3 +65,40 @@ cpwd_admin stop -name CPFEEDMAN -path /home/admin/cpfeedman -command "/home/admi
 cpwd_admin del -name CPFEEDMAN
 ps ax | grep cpfeedman
 ```
+
+### Install
+
+```bash
+# on cpman
+mkdir /opt/cpfeedman
+
+curl_cli -k -o /opt/cpfeedman/cpfeedman -L https://github.com/mkol5222/pub.filex/raw/refs/heads/cpfeedman/cpfeedman
+chmod +x /opt/cpfeedman/cpfeedman
+
+ps ax | grep cpfeedman
+cpwd_admin list | grep CPFEEDMAN
+cpwd_admin del -name CPFEEDMAN
+cpwd_admin list | grep CPFEEDMAN
+ps ax | grep cpfeedman
+kill -9 22624
+ps ax | grep cpfeedman
+
+cp /home/admin/.envrc /opt/cpfeedman/.envrc
+
+file /opt/cpfeedman/cpfeedman
+
+cat /opt/cpfeedman/.envrc
+cat /opt/cpfeedman/.envrc | grep feeds.jsonl
+cat /opt/cpfeedman/feeds.jsonl
+
+cpwd_admin start -name CPFEEDMAN -path /opt/cpfeedman/cpfeedman -command "/opt/cpfeedman/cpfeedman /opt/cpfeedman/.envrc" -slp_timeout 1 -retry_limit u 
+
+watch -d 'cpwd_admin list | grep CPFEEDMAN'
+
+cpwd_admin list | grep CPFEEDMAN
+ps ax | grep cpfeedman
+
+tail -f /var/log/cpfeedman.log
+
+cpwd_admin stop -name CPFEEDMAN -path /opt/cpfeedman/cpfeedman -command "/opt/cpfeedman/cpfeedman /opt/cpfeedman/.envrc" 
+cpwd_admin del -name CPFEEDMAN
