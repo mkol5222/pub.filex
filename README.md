@@ -116,6 +116,7 @@ chmdo +x /etc/init.d/cpfeedman
 
 chkconfig --add cpfeedman
 chkconfig cpfeedman on
+chkconfig | grep cpfeedman
 ```
 
 ### init.d script
