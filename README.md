@@ -103,9 +103,9 @@ tail -f /var/log/cpfeedman.log
 cpwd_admin stop -name CPFEEDMAN -path /opt/cpfeedman/cpfeedman -command "/opt/cpfeedman/cpfeedman /opt/cpfeedman/.envrc" 
 cpwd_admin del -name CPFEEDMAN
 
-# init.d below
+# init.d below - introduce as /etc/init.d/cpfeedman
 
-chmdo +x /etc/init.d/cpfeedman
+chmod +x /etc/init.d/cpfeedman
 
 /etc/init.d/cpfeedman
 /etc/init.d/cpfeedman status
@@ -117,6 +117,8 @@ chmdo +x /etc/init.d/cpfeedman
 chkconfig --add cpfeedman
 chkconfig cpfeedman on
 chkconfig | grep cpfeedman
+
+chkconfig --list cpfeedman
 ```
 
 ### init.d script
@@ -136,6 +138,16 @@ chkconfig | grep cpfeedman
 # Default-Stop:      0 1 2 6
 # Short-Description: CPFEEDMAN Check Point Watchdog service
 ### END INIT INFO
+
+# Load Check Point environment
+if [ -f /etc/profile.d/CP.sh ]; then
+    . /etc/profile.d/CP.sh
+elif [ -f $CPDIR/tmp/.CPprofile.sh ]; then
+    . $CPDIR/tmp/.CPprofile.sh
+fi
+
+PATH=$CPDIR/bin:$PATH
+export PATH
 
 NAME="CPFEEDMAN"
 BIN_PATH="/opt/cpfeedman/cpfeedman"
