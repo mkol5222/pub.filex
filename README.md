@@ -102,3 +102,92 @@ tail -f /var/log/cpfeedman.log
 
 cpwd_admin stop -name CPFEEDMAN -path /opt/cpfeedman/cpfeedman -command "/opt/cpfeedman/cpfeedman /opt/cpfeedman/.envrc" 
 cpwd_admin del -name CPFEEDMAN
+
+# init.d below
+
+chmdo +x /etc/init.d/cpfeedman
+
+/etc/init.d/cpfeedman
+/etc/init.d/cpfeedman status
+/etc/init.d/cpfeedman stop
+/etc/init.d/cpfeedman start
+/etc/init.d/cpfeedman restart
+/etc/init.d/cpfeedman status
+
+chkconfig --add cpfeedman
+chkconfig cpfeedman on
+```
+
+### init.d script
+
+```bash
+#!/bin/sh
+#
+# chkconfig: 345 99 01
+# description: CPFEEDMAN watchdog service
+# processname: cpfeedman
+
+### BEGIN INIT INFO
+# Provides:          cpfeedman
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Default-Start:     3 4 5
+# Default-Stop:      0 1 2 6
+# Short-Description: CPFEEDMAN Check Point Watchdog service
+### END INIT INFO
+
+NAME="CPFEEDMAN"
+BIN_PATH="/opt/cpfeedman/cpfeedman"
+CMD="$BIN_PATH /opt/cpfeedman/.envrc"
+
+start() {
+    echo "Starting $NAME..."
+    cpwd_admin start -name $NAME -path $BIN_PATH -command "$CMD" -slp_timeout 1 -retry_limit u
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && echo "Started $NAME successfully."
+    return $RETVAL
+}
+
+stop() {
+    echo "Stopping $NAME..."
+    cpwd_admin stop -name $NAME -path $BIN_PATH -command "$CMD"
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && echo "Stopped $NAME successfully."
+    return $RETVAL
+}
+
+status() {
+    cpwd_admin list | grep $NAME
+    RETVAL=$?
+    # look for CPFEEDMAN  0      T     0
+    # or CPFEEDMAN  <pid>  E     <exec_count>
+    RES=$(cpwd_admin list | grep $NAME)
+    # check $RES starts with CPFEEDMAN whitespaces <pid> whitespaces E whitespaces <exec_count>
+    if [[ $RES =~ ^$NAME[[:space:]]+([0-9]+)[[:space:]]+E[[:space:]]+([0-9]+) ]]; then
+        echo "$NAME is running with PID ${BASH_REMATCH[1]} and exec count ${BASH_REMATCH[2]}."
+    else
+        echo "$NAME is not running."
+    fi
+    return $RETVAL
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+exit $?
+```
