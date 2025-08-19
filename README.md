@@ -119,6 +119,12 @@ chkconfig cpfeedman on
 chkconfig | grep cpfeedman
 
 chkconfig --list cpfeedman
+
+# logrotate configuration - see and establish /etc/logrotate.d/cpfeedman.log below!
+
+logrotate -d /etc/logrotate.d/cpfeedman.log
+logrotate -f /etc/logrotate.d/cpfeedman.log
+ls -la /var/log/cpfeedman*
 ```
 
 ### init.d script
@@ -203,4 +209,20 @@ case "$1" in
         exit 1
 esac
 exit $?
+```
+
+### logrotate
+
+`/etc/logrotate.d/cpfeedman.log`
+
+```
+/var/log/cpfeedman.log {
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+    copytruncate
+    size 100M
+}
 ```
