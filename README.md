@@ -31,7 +31,7 @@ Configuration:
 ```bash
 #!/bin/bash
 
-mgmt_cli -r true show simple-gateways details-level full limit 100 --format json | jq -r -c '.objects[] | {gw:.name, ip: ."ipv4-address"}' | while read gw; do
+(mgmt_cli -r true show simple-gateways details-level full limit 100 --format json | jq -r -c '.objects[] | {gw:.name, ip: ."ipv4-address"}'; mgmt_cli -r true show simple-clusters details-level full limit 100 --format json | jq -r -c '.objects[]."cluster-members"[]| {gw:.name, ip: ."ip-address"}') | while read gw; do
   name=$(echo $gw | jq -r '.gw')
   ip=$(echo $gw | jq -r '.ip')
   #echo "Gateway: $name, IP: $ip"
@@ -39,6 +39,8 @@ mgmt_cli -r true show simple-gateways details-level full limit 100 --format json
     jq -n -c -r --arg feed "$feed" --arg ip "$ip" --arg gw "$name" '{"feed": $feed, gw: $gw, ip: $ip}'
   done
 done | tee feeds.jsonl
+
+mgmt_cli -r true show simple-clusters details-level full limit 100 --format json | jq -r -c '.objects[] 
 ```
 
 `feeds.jsonl`
@@ -226,3 +228,39 @@ exit $?
     size 100M
 }
 ```
+
+### feeds check and CA validation skip
+
+
+`setup_feeds.sh`
+
+```bash
+#!/bin/bash 
+
+cat feeds.jsonl | while read F; do
+   # echo "$F" | jq .
+   FEEDNAME=$(echo "$F" | jq -r .feed)
+   GWIP=$(echo "$F" | jq -r .ip)
+   echo "Handling $FEEDNAME at $GWIP"
+    CMD="cpprod_util CPPROD_SetValue FW1 EFO_SKIP_SSL_VALIDATION_$FEEDNAME 1 1 1" 
+    cprid_util -server $GWIP -verbose rexec -rcmd bash -c "$CMD"
+    CMD="TDERROR_ALL_ALL=1 dynamic_objects -efo_update $FEEDNAME" 
+    cprid_util -server $GWIP -verbose rexec -rcmd bash -c "$CMD" | grep cert
+    CMD="dynamic_objects -efo_update $FEEDNAME" 
+    cprid_util -server $GWIP -verbose rexec -rcmd bash -c "$CMD" 
+  echo
+  echo
+done
+
+echo
+echo "Final check"
+cat feeds.jsonl | while read F; do
+   # echo "$F" | jq .
+   FEEDNAME=$(echo "$F" | jq -r .feed)
+   GWIP=$(echo "$F" | jq -r .ip)
+   echo "Checking $FEEDNAME at $GWIP"
+    CMD="dynamic_objects -efo_update $FEEDNAME" 
+    cprid_util -server $GWIP -verbose rexec -rcmd bash -c "$CMD" 
+  echo
+  echo
+done
