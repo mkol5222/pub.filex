@@ -31,7 +31,7 @@ Configuration:
 ```bash
 #!/bin/bash
 
-(mgmt_cli -r true show simple-gateways details-level full limit 100 --format json | jq -r -c '.objects[] | {gw:.name, ip: ."ipv4-address"}'; mgmt_cli -r true show simple-clusters details-level full limit 100 --format json | jq -r -c '.objects[]."cluster-members"[]| {gw:.name, ip: ."ip-address"}') | while read gw; do
+( (mgmt_cli -r true show simple-gateways details-level full limit 100 --format json | jq -r -c '.objects[] | {gw:.name, ip: ."ipv4-address"}'); (mgmt_cli -r true show simple-clusters details-level full limit 100 --format json | jq -r -c '.objects[]."cluster-members"[]| {gw:.name, ip: ."ip-address"}' )) | while read gw; do
   name=$(echo $gw | jq -r '.gw')
   ip=$(echo $gw | jq -r '.ip')
   #echo "Gateway: $name, IP: $ip"
@@ -40,7 +40,7 @@ Configuration:
   done
 done | tee feeds.jsonl
 
-mgmt_cli -r true show simple-clusters details-level full limit 100 --format json | jq -r -c '.objects[] 
+
 ```
 
 `feeds.jsonl`
