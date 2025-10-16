@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"time"
 )
 
 // execute script ./newsms with env vars set with NEWSMS_PHONE and NEWSMS_SMSTEXT
@@ -25,7 +26,8 @@ func sendSMS(phone, smstext string) error {
 		log.Printf("Error executing newsms: %v, output: %s", err, string(output))
 		return err
 	}
-	log.Printf("newsms output: %s", string(output))
+	ts := time.Now().Format(time.RFC3339)
+	log.Printf("[%s] newsms output: %s", ts, string(output))
 
 	return nil
 }
@@ -43,6 +45,8 @@ func sendSMSHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ts := time.Now().Format(time.RFC3339)
+	fmt.Printf("[%s] Received request: username=%s, password=%s, phone=%s, smstext=%s\n", ts, username, password, phone, smstext)
 	sendSMS(phone, smstext)
 
 	// For demonstration, just echo the parameters
@@ -50,8 +54,17 @@ func sendSMSHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/sendsms", sendSMSHandler)
+
 	addr := ":60611"
+
+	// addr from os args or default to :60611
+	if len(os.Args) > 1 {
+		// use os.Args[1] as addr
+		addr = os.Args[1]
+	}
+
+	http.HandleFunc("/sendsms", sendSMSHandler)
+
 	log.Printf("Starting server at %s...", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
