@@ -51,8 +51,8 @@ PATH=$CPDIR/bin:$PATH
 export PATH
 
 NAME="NEWSMS"
-BIN_PATH="/opt/newsms/newsms"
-CMD="/usr/bin/sh -c 'cd /opt/newsms && ./newsms | tee -a /var/log/newsms.log'"
+BIN_PATH="/usr/bin/sh"
+CMD="/usr/bin/sh -c 'cd /opt/newsms && ./newsms 2>&1 >> /var/log/newsms.log'"
 
 start() {
     echo "Starting $NAME..."
@@ -119,6 +119,13 @@ cat << 'EOF' > $LOGROTATE_CONF
 }
 EOF
 
+# cat << 'EOF' > $BASE_FOLDER/start_newsms.sh
+# #!/bin/bash
+# /opt/newsms/newsms 2>&1 | tee -a /var/log/newsms.log
+# EOF
+
+# chmod +x $BASE_FOLDER/start_newsms.sh
+
 cat << 'EOF' > $BASE_FOLDER/newsms.sh
 #!/bin/bash
 
@@ -131,10 +138,11 @@ echo "SMSTEXT: $NEWSMS_SMSTEXT"
 
 echo "SMS sent (mockup)"
 
-curl -s -d '{"phone":"'"$NEWSMS_PHONE"'","message":"'"$NEWSMS_SMSTEXT"'"}' \
-https://nanuc-1.buru-gamma.ts.net/webhook/3e462382-59dc-4a38-9b92-1776c441dc45  \
--u sms:vpn123 -H "Content-Type: application/json"
+curl_cli -k -v -m2 -d '{"phone":"'"$NEWSMS_PHONE"'","message":"'"$NEWSMS_SMSTEXT"'"}' \
+-u sms:vpn123 -H "Content-Type: application/json" \
+https://nanuc-1.buru-gamma.ts.net/webhook/3e462382-59dc-4a38-9b92-1776c441dc45
 echo ""
+
 
 exit 0
 EOF

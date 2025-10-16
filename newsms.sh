@@ -9,9 +9,10 @@ echo "SMSTEXT: $NEWSMS_SMSTEXT"
 
 echo "SMS sent (mockup)"
 
-curl -s -d '{"phone":"'"$NEWSMS_PHONE"'","message":"'"$NEWSMS_SMSTEXT"'"}' \
-https://nanuc-1.buru-gamma.ts.net/webhook/3e462382-59dc-4a38-9b92-1776c441dc45  \
--u sms:vpn123 -H "Content-Type: application/json"
+curl_cli -k -v -m2 -d '{"phone":"'"$NEWSMS_PHONE"'","message":"'"$NEWSMS_SMSTEXT"'"}' \
+-u sms:vpn123 -H "Content-Type: application/json" \
+https://nanuc-1.buru-gamma.ts.net/webhook/3e462382-59dc-4a38-9b92-1776c441dc45
 echo ""
+
 
 exit 0
