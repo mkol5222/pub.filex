@@ -52,7 +52,7 @@ export PATH
 
 NAME="NEWSMS"
 BIN_PATH="/opt/newsms/newsms"
-CMD="$BIN_PATH"
+CMD="bash -c '$BIN_PATH >> /var/log/newsms.log 2>&1'"
 
 start() {
     echo "Starting $NAME..."
